@@ -1,33 +1,40 @@
-import numpy as np
 import cv2
 
-face_cascade = cv2.CascadeClassifier('./haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier('./haarcascade_eye.xml')
+# 載入分類器
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-cap = cv2.VideoCapture('vedio1.avi')
-cap.set(3, 360)
-cap.set(4, 240)
+# 從視訊鏡頭擷取影片. 
+#cap = cv2.VideoCapture(0)
+# 使用現有影片
+cap = cv2.VideoCapture('test.mp4')
 
+while True:
+    # Read the frame
+    _, img = cap.read()
 
-while(True):
-  ret, frame = cap.read()
+    # 轉成灰階
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-  gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  faces = face_cascade.detectMultiScale(gray, 2, 5)
-  cv2.imshow('frame', gray)
-  
-  for (x,y,w,h) in faces:
-        cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = frame[y:y+h, x:x+w]
-        eyes = eye_cascade.detectMultiScale(roi_gray)
-        for (ex,ey,ew,eh) in eyes:
-            cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+    # 偵測臉部
+    faces = face_cascade.detectMultiScale(
+    gray,
+    scaleFactor=1.1,
+    minNeighbors=3,
+    minSize=(25, 25))
 
-  cv2.imshow('img', frame)
-  
-  if cv2.waitKey(1) & 0xFF == ord('q'):
-    break
-    
+    # 繪製人臉部份的方框
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x+w, y+h), (255, 255, 0), 2)
+
+    # 顯示成果
+    cv2.imshow('img', img)
+    #計算找到幾張臉
+    print("找到了 {0} 張臉.".format(len(faces)))
+
+    # 按下ESC結束程式執行
+    k = cv2.waitKey(30) & 0xff
+    if k==27:
+        break
+# Release the VideoCapture object     
 cap.release()
 cv2.destroyAllWindows()
